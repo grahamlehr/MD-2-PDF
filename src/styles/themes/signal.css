@@ -1,0 +1,209 @@
+/* --- Signal Document Theme (Swiss / International Typographic Style) --- */
+
+.theme-signal {
+  --pdf-font-family: 'Geist', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --pdf-font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --pdf-color-primary: #0e0e0c;
+  --pdf-color-secondary: #55554f;
+  --signal-paper: #f5f5f2;
+  --signal-surface: #ebebe6;
+  --signal-hairline: #d6d6cf;
+  --signal-rule: #0e0e0c;
+  --signal-accent: #1fe070;
+  --signal-accent-text: #086534;
+  --signal-accent-2: #3d3dff;
+
+  /* Font size variables */
+  --font-size-base: calc(10.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-h1: calc(24pt * var(--pdf-font-size-scale, 1));
+  --font-size-h2: calc(16pt * var(--pdf-font-size-scale, 1));
+  --font-size-h3: calc(12.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-code: calc(9pt * var(--pdf-font-size-scale, 1));
+  --font-size-table: calc(9.5pt * var(--pdf-font-size-scale, 1));
+}
+
+.theme-signal .pagedjs_page_content {
+  font-family: var(--pdf-font-family);
+  color: var(--pdf-color-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+
+/* Headings — Semibold 600, tight negative tracking, flush left */
+.theme-signal h1,
+.theme-signal h2,
+.theme-signal h3,
+.theme-signal h4,
+.theme-signal h5,
+.theme-signal h6 {
+  font-family: var(--pdf-font-family);
+  font-weight: 600;
+  color: var(--pdf-color-primary);
+  margin-top: 20pt;
+  margin-bottom: 8pt;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.theme-signal h1 {
+  font-size: var(--font-size-h1);
+  letter-spacing: -0.035em;
+  border-top: 4px solid var(--signal-accent);
+  border-bottom: 2px solid var(--signal-rule);
+  padding-top: 8pt;
+  padding-bottom: 6pt;
+  margin-top: 0;
+}
+
+.theme-signal h2 {
+  font-size: var(--font-size-h2);
+  border-top: 2px solid var(--signal-rule);
+  padding-top: 6pt;
+}
+
+.theme-signal h3 {
+  font-size: var(--font-size-h3);
+  color: var(--pdf-color-primary);
+}
+
+.theme-signal h4 {
+  font-family: var(--pdf-font-mono);
+  font-size: calc(9pt * var(--pdf-font-size-scale, 1));
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pdf-color-secondary);
+}
+
+/* Paragraphs & Spacing */
+.theme-signal p,
+.theme-signal ul,
+.theme-signal ol,
+.theme-signal table,
+.theme-signal blockquote {
+  margin-bottom: 11pt;
+}
+
+/* Links */
+.theme-signal a {
+  color: var(--pdf-color-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--signal-accent);
+  text-decoration-thickness: 1.5pt;
+  text-underline-offset: 2pt;
+}
+
+/* Lists */
+.theme-signal ul,
+.theme-signal ol {
+  padding-left: 18pt;
+}
+
+.theme-signal li {
+  margin-bottom: 3.5pt;
+}
+
+.theme-signal ul li::marker {
+  color: var(--signal-accent-text);
+}
+
+/* Blockquotes — 4px Signal green bar on warm paper, zero radius */
+.theme-signal blockquote {
+  border-left: 4px solid var(--signal-accent);
+  background-color: var(--signal-paper);
+  color: var(--pdf-color-primary);
+  padding: 10pt 14pt;
+  margin: 14pt 0;
+  border-radius: 0;
+}
+
+.theme-signal blockquote p {
+  margin-bottom: 0;
+}
+
+/* Code & Code Blocks — Geist Mono, zero radius, crisp rules */
+.theme-signal code {
+  font-family: var(--pdf-font-mono);
+  background-color: var(--signal-paper);
+  color: var(--signal-accent-text);
+  padding: 1px 5px;
+  border-radius: 0;
+  font-size: var(--font-size-code);
+  border: 1px solid var(--signal-hairline);
+}
+
+.theme-signal pre {
+  background-color: var(--signal-paper);
+  padding: 11pt 14pt;
+  border-radius: 0;
+  overflow: auto;
+  margin: 14pt 0;
+  border: 1px solid var(--signal-hairline);
+  border-top: 2px solid var(--signal-rule);
+}
+
+.theme-signal pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  color: var(--pdf-color-primary);
+  font-size: var(--font-size-code);
+}
+
+/* Table Design — Swiss ruled table (.sg-table) */
+.theme-signal table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16pt 0;
+  font-size: var(--font-size-table);
+}
+
+.theme-signal table th {
+  font-family: var(--pdf-font-mono);
+  font-size: calc(8.5pt * var(--pdf-font-size-scale, 1));
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pdf-color-secondary);
+  background-color: var(--signal-paper);
+  border-top: 2px solid var(--signal-rule);
+  border-bottom: 2px solid var(--signal-rule);
+  padding: 7pt 9pt;
+  text-align: left;
+}
+
+.theme-signal table td {
+  border-bottom: 1px solid var(--signal-hairline);
+  padding: 7pt 9pt;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* Table of Contents */
+.theme-signal .toc-block {
+  border-top: 2px solid var(--signal-rule);
+  border-bottom: 2px solid var(--signal-rule);
+  background-color: var(--signal-paper);
+  padding: 12pt 16pt;
+  margin: 16pt 0;
+}
+
+.theme-signal .toc-header {
+  border: none;
+  padding-top: 0;
+  margin-top: 0;
+  font-family: var(--pdf-font-mono);
+  font-size: calc(9pt * var(--pdf-font-size-scale, 1));
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pdf-color-secondary);
+}
+
+/* Horizontal Rule — 2px ink rule */
+.theme-signal hr {
+  height: 2px;
+  background: var(--signal-rule);
+  border: none;
+  margin: 18pt 0;
+}

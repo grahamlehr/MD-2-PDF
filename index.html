@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MD-2-PDF — Signal Markdown Studio</title>
+    <!-- Google Fonts: Geist & Geist Mono (Signal Design System) + Document Theme Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fira+Sans:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles/signal.css" />
+    <link rel="stylesheet" href="/src/styles/app.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      
+      <!-- Left Sidebar (Workspace & Outline) -->
+      <aside class="sidebar left-sidebar" id="left-sidebar">
+        <!-- Sidebar Toggle Tabs (Signal .sg-tabs) -->
+        <div class="sidebar-tabs sg-tabs" role="tablist">
+          <button class="sidebar-tab-btn sg-tab active" data-tab="docs" title="Documents">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M15 2H6v20h12V7Z"/><path d="M14 2v5h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            <span>Documents</span>
+          </button>
+          <button class="sidebar-tab-btn sg-tab" data-tab="outline" title="Document outline">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 6h18"/><path d="M3 12h10"/><path d="M3 18h10"/><path d="M16 12h5"/><path d="M16 18h5"/></svg>
+            <span>Outline</span>
+          </button>
+        </div>
+
+        <!-- Sidebar Panels -->
+        <div class="sidebar-panel active" id="panel-docs">
+          <div class="panel-header">
+            <div class="panel-header-title">
+              <span class="sg-index">01</span>
+              <h3>Workspace</h3>
+            </div>
+            <button class="sg-btn sg-btn--primary sg-btn--sm" id="new-doc-btn" title="Create new document" aria-label="New document">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span class="sg-btn__label">New</span>
+            </button>
+          </div>
+          <div class="doc-search-wrapper">
+            <input type="text" id="doc-search" class="sg-input" placeholder="Filter documents..." autocomplete="off">
+          </div>
+          <ul class="doc-list" id="doc-list">
+            <!-- Dynamically populated -->
+          </ul>
+          <div class="sidebar-footer">
+            <div class="footer-buttons-row">
+              <button class="sg-btn sg-btn--secondary sg-btn--sm footer-btn" id="import-btn">
+                <span class="sg-btn__label">Import .md</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 15v4H3v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+              <input type="file" id="file-import-input" accept=".md" style="display: none;" />
+              <button class="sg-btn sg-btn--secondary sg-btn--sm footer-btn" id="export-md-btn">
+                <span class="sg-btn__label">Export .md</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M7 17L17 7"/><polyline points="7 7 17 7 17 17"/></svg>
+              </button>
+            </div>
+            <div class="sidebar-meta-row">
+              <span class="sg-label">Signal Studio</span>
+              <span class="sg-index app-version">v1.0.25</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-panel" id="panel-outline">
+          <div class="panel-header">
+            <div class="panel-header-title">
+              <span class="sg-index">02</span>
+              <h3>Outline</h3>
+            </div>
+          </div>
+          <div class="outline-container" id="outline-list">
+            <!-- Dynamically populated from markdown headings -->
+            <p class="empty-state">No headers in document.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Workspace Panel -->
+      <main class="main-workspace">
+        
+        <!-- Header / Toolbar -->
+        <header class="app-header">
+          <div class="header-left">
+            <button class="sg-btn sg-btn--icon sg-btn--ghost sg-btn--sm sidebar-toggle active" id="toggle-left-sidebar" title="Toggle workspace sidebar" aria-label="Toggle workspace sidebar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            </button>
+            <div class="sg-brand">
+              <span class="sg-brand__square" aria-hidden="true"></span>
+              <span class="sg-brand__name">MD-2-PDF</span>
+            </div>
+            <span class="header-divider" aria-hidden="true"></span>
+            <div class="doc-title-container">
+              <input type="text" id="active-doc-title" class="doc-title-input" value="Untitled document" placeholder="Rename document..." aria-label="Document title" />
+              <span class="save-badge sg-tag sg-tag--accent" id="save-status">Saved</span>
+            </div>
+          </div>
+          
+          <div class="header-center">
+            <!-- View Layout Selectors -->
+            <div class="segmented-control" id="layout-control" role="group" aria-label="Workspace layout">
+              <button class="segmented-btn" data-layout="edit" title="Editor only">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                <span>Edit</span>
+              </button>
+              <button class="segmented-btn active" data-layout="split" title="Split view">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+                <span>Split</span>
+              </button>
+              <button class="segmented-btn" data-layout="preview" title="Preview only">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                <span>Preview</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <!-- Signal Light / Dark Theme Toggle -->
+            <button class="sg-btn sg-btn--icon sg-btn--ghost sg-btn--sm" id="theme-toggle-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
+              <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+              <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            </button>
+            <!-- Print / Export Action -->
+            <button class="sg-btn sg-btn--primary sg-btn--sm download-btn" id="print-btn">
+              <span class="sg-btn__label">Export PDF</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+            <button class="sg-btn sg-btn--icon sg-btn--ghost sg-btn--sm sidebar-toggle active" id="toggle-right-sidebar" title="Toggle configuration panel" aria-label="Toggle configuration panel">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Working Area (Editor and Preview split) -->
+        <div class="workspace-body split-layout" id="workspace-body">
+          
+          <!-- CodeMirror Editor Container -->
+          <div class="pane editor-pane" id="editor-pane">
+            <div class="pane-header">
+              <div class="pane-header-left">
+                <span class="sg-index">01</span>
+                <span class="pane-title sg-label">Markdown source</span>
+              </div>
+              <div class="editor-actions">
+                <button class="sg-btn sg-btn--secondary sg-btn--sm" id="remove-newlines-btn" title="Join selected lines" style="display: none;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="m7 14-4-4 4-4"/><path d="M3 10h18v8H3"/></svg>
+                  <span class="sg-btn__label">Join lines</span>
+                </button>
+                <span class="word-counter sg-index" id="word-counter">0 words</span>
+              </div>
+            </div>
+            <div class="editor-container-wrapper" id="editor-container">
+              <!-- CodeMirror 6 will mount here -->
+            </div>
+          </div>
+          
+          <!-- Adjustable Split Divider -->
+          <div class="gutter" id="split-gutter" title="Drag to resize panes"></div>
+
+          <!-- Preview Container -->
+          <div class="pane preview-pane" id="preview-pane">
+            <div class="pane-header">
+              <div class="preview-tabs" role="tablist">
+                <button class="preview-tab sg-tab active" data-mode="draft" id="tab-draft">
+                  <span>Draft mode</span>
+                </button>
+                <button class="preview-tab sg-tab" data-mode="print" id="tab-print">
+                  <span>Print layout</span>
+                </button>
+              </div>
+              <div class="preview-actions">
+                <div class="zoom-control-wrapper" id="zoom-control-wrapper" style="display: none;">
+                  <div class="zoom-select-wrapper">
+                    <select id="preview-zoom" class="sg-select zoom-select" aria-label="Preview zoom">
+                      <option value="auto" selected>Auto-fit</option>
+                      <option value="0.5">50%</option>
+                      <option value="0.75">75%</option>
+                      <option value="1.0">100%</option>
+                      <option value="1.25">125%</option>
+                    </select>
+                  </div>
+                </div>
+                <span class="preview-status sg-label" id="preview-status-text">Draft live HTML</span>
+              </div>
+            </div>
+            
+            <div class="preview-body" id="preview-body-container">
+              
+              <!-- Draft Mode Scrollable Area -->
+              <div class="preview-view-mode active" id="draft-view">
+                <div class="markdown-body" id="draft-content">
+                  <!-- Rendered HTML goes here -->
+                </div>
+              </div>
+
+              <!-- Paged.js Print Layout Area -->
+              <div class="preview-view-mode" id="print-view-container">
+                <div class="print-loading-overlay" id="print-loading">
+                  <div class="spinner"></div>
+                  <span class="sg-label">Paginating document...</span>
+                </div>
+                <div id="print-content-source" style="display: none;">
+                  <!-- Source container for Paged.js to read from -->
+                </div>
+                <div class="print-preview-workspace" id="print-preview-target">
+                  <!-- Paged.js renders here as paginated pages -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+          
+        </div>
+      </main>
+
+      <!-- Right Sidebar (Formatting & Page Layout Options) -->
+      <aside class="sidebar right-sidebar" id="right-sidebar">
+        <div class="right-sidebar-header">
+          <span class="sg-index">02</span>
+          <h3>PDF configuration</h3>
+        </div>
+        
+        <div class="right-sidebar-content">
+          <!-- 01. Page Styling Settings -->
+          <div class="settings-group">
+            <div class="settings-section-head">
+              <span class="sg-index">01</span>
+              <label class="settings-label sg-label">Document theme</label>
+            </div>
+            <div class="theme-grid" id="theme-selector">
+              <div class="theme-card active" data-theme="signal">
+                <div class="theme-card-preview signal-preview">
+                  <span class="signal-preview-mark"></span>Sg
+                </div>
+                <span class="theme-card-title">Signal</span>
+              </div>
+              <div class="theme-card" data-theme="gossamer">
+                <div class="theme-card-preview gossamer-preview">Go</div>
+                <span class="theme-card-title">Gossamer</span>
+              </div>
+              <div class="theme-card" data-theme="default">
+                <div class="theme-card-preview default-preview">Aa</div>
+                <span class="theme-card-title">Default</span>
+              </div>
+              <div class="theme-card" data-theme="resume">
+                <div class="theme-card-preview resume-preview">Cv</div>
+                <span class="theme-card-title">Elegant CV</span>
+              </div>
+              <div class="theme-card" data-theme="academic">
+                <div class="theme-card-preview academic-preview">§</div>
+                <span class="theme-card-title">Academic</span>
+              </div>
+              <div class="theme-card" data-theme="report">
+                <div class="theme-card-preview report-preview">Rep</div>
+                <span class="theme-card-title">Tech report</span>
+              </div>
+              <div class="theme-card" data-theme="letter">
+                <div class="theme-card-preview letter-preview">Let</div>
+                <span class="theme-card-title">Letter</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 02. Text Size -->
+          <div class="settings-group">
+            <div class="settings-section-head">
+              <span class="sg-index">02</span>
+              <label class="settings-label sg-label">Text scale</label>
+            </div>
+            <div class="segmented-control full-width" id="text-size-control">
+              <button class="segmented-btn" data-size="small" title="Small text">
+                <span>Small</span>
+              </button>
+              <button class="segmented-btn active" data-size="medium" title="Medium text">
+                <span>Medium</span>
+              </button>
+              <button class="segmented-btn" data-size="large" title="Large text">
+                <span>Large</span>
+              </button>
+              <button class="segmented-btn" data-size="custom" title="Custom scale">
+                <span>Custom</span>
+              </button>
+            </div>
+            <div class="input-wrapper" id="custom-scale-wrapper" style="display: none;">
+              <span class="input-prefix sg-label">Scale</span>
+              <input type="number" id="custom-text-scale" class="sg-input" placeholder="1.0" step="0.05" min="0.3" max="3.0" value="1.0" />
+            </div>
+          </div>
+
+          <!-- 03. Page Setup -->
+          <div class="settings-group">
+            <div class="settings-section-head">
+              <span class="sg-index">03</span>
+              <label class="settings-label sg-label">Page setup</label>
+            </div>
+            <div class="select-wrapper">
+              <select id="page-size" class="sg-select" aria-label="Page size">
+                <option value="A4" selected>A4 (210mm × 297mm)</option>
+                <option value="letter">US Letter (8.5in × 11in)</option>
+                <option value="A5">A5 (148mm × 210mm)</option>
+                <option value="legal">US Legal (8.5in × 14in)</option>
+              </select>
+            </div>
+            
+            <div class="radio-group">
+              <label class="sg-check sg-check--radio radio-label">
+                <input type="radio" name="page-orientation" value="portrait" checked>
+                <span class="sg-check__box"></span>
+                <span>Portrait</span>
+              </label>
+              <label class="sg-check sg-check--radio radio-label">
+                <input type="radio" name="page-orientation" value="landscape">
+                <span class="sg-check__box"></span>
+                <span>Landscape</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 04. Margins & Numbering -->
+          <div class="settings-group">
+            <div class="settings-section-head">
+              <span class="sg-index">04</span>
+              <label class="settings-label sg-label">Margins &amp; numbering</label>
+            </div>
+            <div class="select-wrapper">
+              <select id="page-margins" class="sg-select" aria-label="Page margins">
+                <option value="normal" selected>Normal (20mm)</option>
+                <option value="narrow">Narrow (10mm)</option>
+                <option value="wide">Wide (30mm)</option>
+                <option value="custom">Custom CSS defined</option>
+              </select>
+            </div>
+            <div class="toggle-setting">
+              <span class="toggle-setting-text">Show page numbers</span>
+              <label class="sg-switch">
+                <input type="checkbox" role="switch" id="toggle-page-numbers" checked>
+                <span class="sg-switch__track"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 05. Tables -->
+          <div class="settings-group">
+            <div class="settings-section-head">
+              <span class="sg-index">05</span>
+              <label class="settings-label sg-label">Tables</label>
+            </div>
+            <div class="sg-field">
+              <span class="sg-field__hint">Borders</span>
+              <div class="select-wrapper">
+                <select id="table-borders" class="sg-select" aria-label="Table borders">
+                  <option value="charcoal-0.5" selected>Charcoal thin (0.5pt)</option>
+                  <option value="charcoal-1.0">Charcoal medium (1pt)</option>
+                  <option value="gray-0.5">Light grey thin (0.5pt)</option>
+                  <option value="black-1.0">Ink solid (1pt)</option>
+                  <option value="none">No borders</option>
+                </select>
+              </div>
+            </div>
+            <div class="sg-field">
+              <span class="sg-field__hint">Cell padding</span>
+              <div class="select-wrapper">
+                <select id="table-padding" class="sg-select" aria-label="Table cell padding">
+                  <option value="compact">Compact (4px 6px)</option>
+                  <option value="normal" selected>Normal (8px 10px)</option>
+                  <option value="spacious">Spacious (12px 14px)</option>
+                </select>
+              </div>
+            </div>
+            <div class="toggle-setting">
+              <span class="toggle-setting-text">Striped rows</span>
+              <label class="sg-switch">
+                <input type="checkbox" role="switch" id="table-stripes" checked>
+                <span class="sg-switch__track"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 06. Running Headers & Footers -->
+          <div class="settings-group">
+            <div class="settings-section-head">
+              <span class="sg-index">06</span>
+              <label class="settings-label sg-label">Running headers &amp; footers</label>
+            </div>
+            <div class="input-wrapper">
+              <span class="input-prefix sg-label">Header</span>
+              <input type="text" id="pdf-header-text" class="sg-input" placeholder="Document title (left)" value="" />
+            </div>
+            <div class="input-wrapper">
+              <span class="input-prefix sg-label">Footer</span>
+              <input type="text" id="pdf-footer-text" class="sg-input" placeholder="Subject / date (left)" value="" />
+            </div>
+          </div>
+
+          <!-- 07. Custom CSS Overrides -->
+          <div class="settings-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+            <div class="settings-group-header">
+              <div class="settings-section-head">
+                <span class="sg-index">07</span>
+                <label class="settings-label sg-label">Custom CSS</label>
+              </div>
+              <button class="text-link-btn" id="reset-css-btn">Reset</button>
+            </div>
+            <textarea id="custom-css-editor" class="sg-input custom-css-textarea" placeholder="/* Custom PDF rules */&#10;h1 { border-top-color: #1fe070; }"></textarea>
+          </div>
+          
+          <!-- Helpful Print Configuration Tip -->
+          <div class="print-tip-box">
+            <div class="sg-label" style="color: var(--fg-1); margin-bottom: 4px;">Print checklist</div>
+            <span>Set margins to <strong>None</strong> and scale to <strong>100%</strong> in the browser print dialog.</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

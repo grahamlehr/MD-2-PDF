@@ -1,0 +1,98 @@
+/* --- CodeMirror 6 Editor Overrides (Signal Design System) --- */
+
+.editor-container-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--surface);
+}
+
+.editor-container-wrapper .cm-editor {
+  flex-grow: 1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  background-color: var(--surface) !important;
+  color: var(--fg-1) !important;
+}
+
+.editor-container-wrapper .cm-editor.cm-focused {
+  outline: none !important;
+}
+
+.cm-editor .cm-scroller {
+  font-family: var(--font-mono);
+  padding: var(--space-3) 0;
+}
+
+.cm-editor .cm-content {
+  caret-color: var(--accent-press) !important;
+  padding: 0 var(--space-3);
+}
+
+.cm-editor .cm-gutters {
+  background-color: var(--bg) !important;
+  border-right: 1px solid var(--hairline) !important;
+  color: var(--fg-3) !important;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-editor .cm-activeLineGutter {
+  background-color: var(--surface-2) !important;
+  color: var(--fg-1) !important;
+  font-weight: var(--weight-medium);
+}
+
+.cm-editor .cm-activeLine {
+  background-color: color-mix(in srgb, var(--surface-2) 60%, transparent) !important;
+}
+
+/* Selection & Cursor — Signal Green */
+.cm-editor .cm-selectionBackground,
+.cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
+  background-color: var(--selection) !important;
+}
+
+.cm-editor .cm-cursor,
+.cm-editor .cm-dropCursor {
+  border-left-color: var(--accent-press) !important;
+  border-left-width: 2px !important;
+}
+
+[data-theme="dark"] .cm-editor .cm-cursor,
+[data-theme="dark"] .cm-editor .cm-dropCursor {
+  border-left-color: var(--accent) !important;
+}
+
+/* Customizing scrollbar within the editor */
+.cm-editor .cm-scroller::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.cm-editor .cm-scroller::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+.cm-editor .cm-scroller::-webkit-scrollbar-thumb {
+  background: var(--neutral-300);
+  border-radius: 0;
+}
+
+[data-theme="dark"] .cm-editor .cm-scroller::-webkit-scrollbar-thumb {
+  background: var(--neutral-700);
+}
+
+.cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-1);
+}
+
+/* Highlight matching brackets */
+.cm-editor .cm-matchingBracket {
+  background-color: var(--accent-tint) !important;
+  color: var(--fg-1) !important;
+  border-bottom: 2px solid var(--accent) !important;
+}
