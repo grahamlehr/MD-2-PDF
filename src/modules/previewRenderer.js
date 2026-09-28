@@ -85,6 +85,13 @@ export class PreviewRenderer {
     if (mode === 'draft') {
       // Invalidate any in-flight print renders immediately
       this.currentRenderId++;
+      if (this.renderDebounceTimer) {
+        clearTimeout(this.renderDebounceTimer);
+        this.renderDebounceTimer = null;
+      }
+
+      // Remove Paged.js injected styles so they do not leak into Draft view
+      document.head.querySelectorAll('[data-pagedjs-inserted-styles]').forEach(el => el.remove());
 
       draftView.classList.add('active');
       printView.classList.remove('active');
@@ -104,12 +111,12 @@ export class PreviewRenderer {
     }
   }
 
-  update(doc) {
+  update(doc, force = false) {
     this.currentDoc = doc;
     if (this.activeMode === 'draft') {
       this.renderDraft();
     } else {
-      this.renderPrint(false); // debounced
+      this.renderPrint(force);
     }
   }
 
@@ -252,21 +259,258 @@ export class PreviewRenderer {
     }
   }
 
+  // Prepare print source DOM so Paged.js preserves code block lines and inline whitespace across page splits
+  preparePrintDom(container) {
+    // 1. Wrap each line of <pre><code> in <span class="pdf-code-line"> (cloning open Prism token spans per line)
+    // so Paged.js treats each line as an atomic unit and does not strip newlines/indentation on page 2+.
+    const codeBlocks = container.querySelectorAll('pre > code');
+    codeBlocks.forEach(codeEl => {
+      const rawText = codeEl.textContent || '';
+      if (!rawText) return;
+
+      const lines = [];
+      let currentLine = document.createElement('span');
+      currentLine.className = 'pdf-code-line';
+      lines.push(currentLine);
+
+      const activeWrappers = [];
+
+      const getInsertionTarget = () => {
+        let target = currentLine;
+        for (const wrapper of activeWrappers) {
+          let lastChild = target.lastElementChild;
+          if (!lastChild || lastChild.__sourceWrapper !== wrapper) {
+            lastChild = wrapper.cloneNode(false);
+            lastChild.__sourceWrapper = wrapper;
+            target.appendChild(lastChild);
+          }
+          target = lastChild;
+        }
+        return target;
+      };
+
+      const walk = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const parts = node.nodeValue.split('\n');
+          for (let i = 0; i < parts.length; i++) {
+            if (i > 0) {
+              if (!currentLine.textContent) {
+                currentLine.appendChild(document.createTextNode('\u200B'));
+              }
+              currentLine = document.createElement('span');
+              currentLine.className = 'pdf-code-line';
+              lines.push(currentLine);
+            }
+            if (parts[i].length > 0) {
+              getInsertionTarget().appendChild(document.createTextNode(parts[i]));
+            }
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          activeWrappers.push(node);
+          Array.from(node.childNodes).forEach(walk);
+          activeWrappers.pop();
+        }
+      };
+
+      Array.from(codeEl.childNodes).forEach(walk);
+
+      // Drop trailing empty line caused by trailing newline at the end of fenced code block
+      if (lines.length > 1 && !lines[lines.length - 1].textContent) {
+        lines.pop();
+      } else if (lines.length > 0 && !lines[lines.length - 1].textContent) {
+        lines[lines.length - 1].appendChild(document.createTextNode('\u200B'));
+      }
+
+      codeEl.innerHTML = '';
+      lines.forEach(line => codeEl.appendChild(line));
+    });
+
+    // 2. Wrap whitespace-only text nodes between inline elements inside text blocks in <span class="pdf-ws">
+    // so Paged.js's isIgnorable() / nextSignificantNode() does not delete spaces between inline tags on split pages.
+    const inlineTags = new Set([
+      'STRONG', 'EM', 'CODE', 'A', 'SPAN', 'B', 'I', 'U', 'S', 'DEL', 'INS',
+      'MARK', 'SMALL', 'SUB', 'SUP', 'KBD', 'SAMP', 'VAR', 'Q', 'ABBR', 'CITE', 'TIME'
+    ]);
+    const textContainers = container.querySelectorAll('p, li, td, th, blockquote, dd, dt');
+    textContainers.forEach(block => {
+      const children = Array.from(block.childNodes);
+      children.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE && /^[\t\n\r ]+$/.test(node.nodeValue)) {
+          const prev = node.previousSibling;
+          const next = node.nextSibling;
+          const prevIsInline = prev && prev.nodeType === Node.ELEMENT_NODE && inlineTags.has(prev.nodeName);
+          const nextIsInline = next && next.nodeType === Node.ELEMENT_NODE && inlineTags.has(next.nodeName);
+          if (prevIsInline || nextIsInline) {
+            const wsSpan = document.createElement('span');
+            wsSpan.className = 'pdf-ws';
+            wsSpan.textContent = ' ';
+            block.replaceChild(wsSpan, node);
+          }
+        }
+      });
+    });
+  }
+
+  isFirstContentOnPage(el, rendered) {
+    let curr = el;
+    while (curr && curr !== rendered) {
+      let prev = curr.previousSibling;
+      while (prev) {
+        if (prev.nodeType === Node.ELEMENT_NODE) return false;
+        if (prev.nodeType === Node.TEXT_NODE && prev.textContent.trim().length > 0) return false;
+        prev = prev.previousSibling;
+      }
+      curr = curr.parentNode;
+    }
+    return true;
+  }
+
+  // Register Paged.js chunker hooks to fix text-node break token resolution and heading break-after loops
+  registerPaginationHooks(previewer) {
+    if (!previewer?.chunker?.hooks?.onBreakToken) return;
+
+    previewer.chunker.hooks.onBreakToken.register((breakToken, overflow, rendered) => {
+      if (!breakToken || !breakToken.node || !overflow) return;
+
+      let sourceRoot = breakToken.node;
+      while (sourceRoot.parentNode) {
+        sourceRoot = sourceRoot.parentNode;
+      }
+      if (!sourceRoot.querySelector) return;
+
+      // 1. Prevent duplicate element rendering when a heading (break-after: avoid) is at the very top of a page
+      // and the following sibling overflows into column 2 (stepping back to the heading would loop on prevBreakToken).
+      if (overflow.startContainer && overflow.startContainer.nodeType === Node.ELEMENT_NODE) {
+        const selectedEl = overflow.startContainer.childNodes[overflow.startOffset];
+        if (
+          selectedEl &&
+          selectedEl.nodeType === Node.ELEMENT_NODE &&
+          selectedEl.dataset?.breakAfter === 'avoid' &&
+          selectedEl.nextElementSibling &&
+          selectedEl.nextElementSibling.dataset?.ref &&
+          this.isFirstContentOnPage(selectedEl, rendered)
+        ) {
+          const nextRenderedEl = selectedEl.nextElementSibling;
+          const nextSourceEl = sourceRoot.querySelector(`[data-ref="${nextRenderedEl.dataset.ref}"]`);
+          if (nextSourceEl) {
+            overflow.setStartBefore(nextRenderedEl);
+            breakToken.node = nextSourceEl;
+            breakToken.offset = 0;
+            return breakToken;
+          }
+        }
+      }
+
+      // 2. Fix Paged.js indexOfTextNode() and textContent.indexOf() naive substring matching when splitting
+      // paragraphs, list items, or table cells that contain multiple inline elements or repeated text phrases.
+      let renderedTextNode = null;
+      let charOffset = 0;
+
+      if (overflow.startContainer.nodeType === Node.TEXT_NODE) {
+        renderedTextNode = overflow.startContainer;
+        charOffset = overflow.startOffset;
+      } else if (overflow.startContainer.nodeType === Node.ELEMENT_NODE) {
+        const childNode = overflow.startContainer.childNodes[overflow.startOffset];
+        if (childNode && childNode.nodeType === Node.TEXT_NODE) {
+          renderedTextNode = childNode;
+          charOffset = 0;
+        }
+      }
+
+      if (!renderedTextNode) return;
+
+      const renderedParent = renderedTextNode.parentNode;
+      const parentRef = renderedParent?.dataset?.ref;
+      if (!parentRef) return;
+
+      const sourceParent = sourceRoot.querySelector(`[data-ref="${parentRef}"]`);
+      if (!sourceParent) return;
+
+      let sourceTextNode = null;
+
+      let prevSibling = renderedTextNode.previousSibling;
+      let hopsFromPrev = 1;
+      while (prevSibling && !(prevSibling.nodeType === Node.ELEMENT_NODE && prevSibling.dataset?.ref)) {
+        prevSibling = prevSibling.previousSibling;
+        hopsFromPrev++;
+      }
+
+      if (prevSibling && prevSibling.dataset?.ref) {
+        const sourcePrevEl = sourceParent.querySelector(`:scope > [data-ref="${prevSibling.dataset.ref}"]`);
+        if (sourcePrevEl) {
+          let cursor = sourcePrevEl;
+          for (let i = 0; i < hopsFromPrev && cursor; i++) {
+            cursor = cursor.nextSibling;
+          }
+          if (cursor && cursor.nodeType === Node.TEXT_NODE) {
+            sourceTextNode = cursor;
+          }
+        }
+      }
+
+      if (!sourceTextNode) {
+        let nextSibling = renderedTextNode.nextSibling;
+        let hopsFromNext = 1;
+        while (nextSibling && !(nextSibling.nodeType === Node.ELEMENT_NODE && nextSibling.dataset?.ref)) {
+          nextSibling = nextSibling.nextSibling;
+          hopsFromNext++;
+        }
+
+        if (nextSibling && nextSibling.dataset?.ref) {
+          const sourceNextEl = sourceParent.querySelector(`:scope > [data-ref="${nextSibling.dataset.ref}"]`);
+          if (sourceNextEl) {
+            let cursor = sourceNextEl;
+            for (let i = 0; i < hopsFromNext && cursor; i++) {
+              cursor = cursor.previousSibling;
+            }
+            if (cursor && cursor.nodeType === Node.TEXT_NODE) {
+              sourceTextNode = cursor;
+            }
+          }
+        }
+      }
+
+      if (!sourceTextNode && sourceParent.childNodes.length === 1 && sourceParent.firstChild.nodeType === Node.TEXT_NODE) {
+        sourceTextNode = sourceParent.firstChild;
+      }
+
+      if (sourceTextNode && sourceTextNode.nodeType === Node.TEXT_NODE) {
+        const baseOffset = Math.max(0, sourceTextNode.textContent.length - renderedTextNode.textContent.length);
+        const exactOffset = baseOffset + charOffset;
+
+        if (sourceTextNode === sourceParent.firstChild && exactOffset === 0) {
+          breakToken.node = sourceParent;
+          breakToken.offset = 0;
+        } else {
+          breakToken.node = sourceTextNode;
+          breakToken.offset = exactOffset;
+        }
+        return breakToken;
+      }
+    });
+  }
+
   // Render Print Layout (Paged.js Pagination)
   renderPrint(force = false) {
     if (!this.currentDoc) return;
 
     if (this.renderDebounceTimer) {
       clearTimeout(this.renderDebounceTimer);
+      this.renderDebounceTimer = null;
     }
 
     // Increment immediately to invalidate any previously running/in-flight render
     const renderId = ++this.currentRenderId;
+    if (this.statusText) {
+      this.statusText.textContent = 'Updating layout...';
+    }
 
     // Set a 100ms delay instead of 0ms when forced/switching to let browser complete layout paints
     const delay = force ? 100 : 1000; 
 
     this.renderDebounceTimer = setTimeout(() => {
+      this.renderDebounceTimer = null;
+
       // Chain the rendering to serialize execution (guarantees at most one Paged.js run is active)
       this.renderPromise = (async () => {
         try {
@@ -330,6 +574,9 @@ export class PreviewRenderer {
 
           // Run Mermaid diagrams in source first with 'default' (light) theme for print
           await this.renderMermaid(this.printSource, 'default');
+
+          // Prepare code lines and inline whitespace for Paged.js fragmentation
+          this.preparePrintDom(this.printSource);
 
           // Compile Stylesheet custom variables and rules
           const styleEl = document.createElement('style');
@@ -451,6 +698,12 @@ export class PreviewRenderer {
           // Clean up any previously inserted Paged.js styles to avoid style leakage and cascade pollution
           document.head.querySelectorAll('[data-pagedjs-inserted-styles]').forEach(el => el.remove());
 
+          // Reset CSS zoom/transform to 1 BEFORE Paged.js measures page boxes and column widths.
+          // Otherwise Paged.js compares zoomed getBoundingClientRect() against unzoomed columnGap and loses pages.
+          this.printContainer.style.zoom = '1';
+          this.printContainer.style.transform = '';
+          this.printContainer.style.setProperty('--preview-zoom', '1');
+
           // Clear target container and apply theme class before pagination
           this.printContainer.className = `theme-${templateVal} text-size-${textSizeVal}`;
           this.printContainer.style.setProperty('--pdf-font-size-scale', scaleFactor.toString());
@@ -458,20 +711,36 @@ export class PreviewRenderer {
 
           // Instantiate a fresh Previewer on every render to avoid concurrency/state conflicts
           const previewer = new Previewer();
+          this.registerPaginationHooks(previewer);
 
           // Prepare stylesheet object for Paged.js to parse and apply
           const stylesheetObj = {};
           stylesheetObj[window.location.href] = styleEl.textContent;
 
           // Run Paged.js previewer with explicit stylesheet list to prevent fallback to 1-inch default margins
-          await previewer.preview(
+          const flow = await previewer.preview(
             this.printSource.innerHTML,
             [stylesheetObj],
             this.printContainer
           );
 
+          // Remove Paged.js's internal ResizeObserver on each page before applying preview zoom,
+          // because Paged.js's ResizeObserver compares zoomed getBoundingClientRect() to unzoomed contentRect.
+          if (flow && Array.isArray(flow.pages)) {
+            flow.pages.forEach(page => {
+              if (typeof page.removeListeners === 'function') {
+                page.removeListeners();
+              }
+            });
+          }
+
           // Discard if obsolete or no longer in print mode
-          if (renderId !== this.currentRenderId || this.activeMode !== 'print') return;
+          if (renderId !== this.currentRenderId || this.activeMode !== 'print') {
+            if (this.activeMode !== 'print') {
+              document.head.querySelectorAll('[data-pagedjs-inserted-styles]').forEach(el => el.remove());
+            }
+            return;
+          }
 
           this.statusText.textContent = 'Print layout ready';
           this.updateZoom();
@@ -518,12 +787,23 @@ export class PreviewRenderer {
     }
   }
 
-  print() {
-    // Before printing, force a print layout render synchronously
+  async print() {
+    // Ensure print layout is rendered and up-to-date before opening browser print dialog
     if (this.activeMode !== 'print') {
       this.setMode('print');
+    } else if (!this.printContainer.querySelector('.pagedjs_page') || this.renderDebounceTimer) {
+      this.renderPrint(true);
     }
-    
+
+    if (this.renderDebounceTimer) {
+      await new Promise(resolve => setTimeout(resolve, 120));
+    }
+    try {
+      await this.renderPromise;
+    } catch (e) {
+      // Ignore layout error and still allow print dialog
+    }
+
     // Trigger browser print dialog
     window.print();
   }

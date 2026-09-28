@@ -107,19 +107,26 @@ class MarkdownParser {
       slugs: []
     };
 
-    // 3. Process custom page break markdown extensions
+    // 3. Process custom page break markdown extensions (ignoring fenced code blocks and inline code spans)
     let processedContent = content;
-    const pagebreakRegex = /\[\[page-?break\]\]|\[page-?break\]|\\pagebreak|<!--\s*page-?break\s*-->/gi;
-    processedContent = processedContent.replace(pagebreakRegex, '\n\n<div class="page-break-before"></div>\n\n');
+    const pagebreakWithCodeSkipRegex = /((?:^|\r?\n)[ \t]*(?:`{3,}|~{3,})[\s\S]*?(?:\r?\n[ \t]*(?:`{3,}|~{3,})[ \t]*(?=\r?\n|$)|$)|`+[^`\r\n]*?`+)|(?:\[\[page-?break\]\]|\[page-?break\]|\\pagebreak|<!--\s*page-?break\s*-->)/gi;
+    processedContent = processedContent.replace(pagebreakWithCodeSkipRegex, (match, codeSegment) => {
+      if (codeSegment) return match;
+      return '\n\n<div class="page-break-before"></div>\n\n';
+    });
 
     // 4. Render content to HTML
     let renderedHtml = this.md.render(processedContent, env);
 
-    // 4. Inject Table of Contents if requested
-    const tocPlaceholderRegex = /\[\[TOC\]\]|\[toc\]/gi;
+    // 5. Inject Table of Contents if requested (ignoring <pre> and <code> blocks, and unwrapping standalone <p>[[TOC]]</p>)
+    const tocPlaceholderRegex = /\[\[TOC\]\]|\[toc\]/i;
     if (tocPlaceholderRegex.test(renderedHtml)) {
       const tocHtml = this.generateTocHtml(env.headings);
-      renderedHtml = renderedHtml.replace(tocPlaceholderRegex, tocHtml);
+      const tocWithCodeSkipRegex = /(<pre\b[^>]*>[\s\S]*?<\/pre>|<code\b[^>]*>[\s\S]*?<\/code>)|<p>\s*(?:\[\[TOC\]\]|\[toc\])\s*<\/p>|(?:\[\[TOC\]\]|\[toc\])/gi;
+      renderedHtml = renderedHtml.replace(tocWithCodeSkipRegex, (match, codeHtml) => {
+        if (codeHtml) return match;
+        return tocHtml;
+      });
     }
 
     return {

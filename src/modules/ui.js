@@ -115,6 +115,18 @@ class UIController {
     this.activeDocTitle.value = doc.title;
     this.editor.setContent(doc.content);
 
+    // Cancel the autosave timer triggered by programmatic setContent
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = null;
+    }
+    this.saveStatus.textContent = 'Saved';
+    this.saveStatus.classList.remove('saving');
+
+    // Pre-parse markdown so initial preview and outline render immediately
+    doc.rendered = markdownParser.render(doc.content || '');
+    this.renderOutline(doc.rendered.headings);
+
     // Update browser tab/window title
     document.title = `${doc.title} — MD-2-PDF`;
 
@@ -191,6 +203,11 @@ class UIController {
   }
 
   triggerImmediateSave() {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = null;
+    }
+
     const content = this.editor.getContent();
     const doc = documentManager.getActive();
     if (!doc) return;

@@ -106,17 +106,33 @@
   background: none !important;
 }
 
-/* Avoid page breaks inside essential elements */
-pre, blockquote, table, tr, img, .mermaid {
+/* Avoid page breaks inside atomic rows, figures, diagrams, and individual code lines */
+tr, thead, img, .mermaid, .pdf-code-line {
   page-break-inside: avoid;
   break-inside: avoid;
 }
 
-/* Ensure code block text wraps instead of overflowing and getting clipped */
+/* Allow multi-page code blocks, tables, and blockquotes to split cleanly across pages */
+pre, blockquote, table, tbody {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+/* Prevent top-margin collapse on the first element of a page from pushing Paged.js's 100%-height wrapper into column 2 */
+.pagedjs_page_content > div > *:first-child {
+  margin-top: 0 !important;
+}
+
+/* Ensure code block text wraps instead of overflowing or becoming a monolithic scroll container */
 pre, pre code {
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
+  overflow: visible !important;
+}
+
+.pdf-code-line {
+  display: block;
 }
 
 h1, h2, h3, h4, h5, h6 {
