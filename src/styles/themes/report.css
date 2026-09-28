@@ -1,0 +1,139 @@
+/* --- Technical Report Theme --- */
+
+.theme-report {
+  --pdf-font-family: 'Outfit', 'Inter', sans-serif;
+  --pdf-color-primary: #334155;
+  --pdf-color-secondary: #64748b;
+  --report-accent: #0284c7; /* Sky blue accent */
+  --report-bg-dark: #0f172a;
+
+  /* Font size variables */
+  --font-size-base: calc(10pt * var(--pdf-font-size-scale, 1));
+  --font-size-h1: calc(20pt * var(--pdf-font-size-scale, 1));
+  --font-size-h2: calc(15pt * var(--pdf-font-size-scale, 1));
+  --font-size-h3: calc(12pt * var(--pdf-font-size-scale, 1));
+  --font-size-code: calc(8.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-table: calc(9pt * var(--pdf-font-size-scale, 1));
+}
+
+/* Reset heading counters at the root level so they span across pages */
+
+.theme-report .pagedjs_page_content {
+  font-family: var(--pdf-font-family);
+  color: var(--pdf-color-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+}
+
+/* Document Title (H1 when YAML Frontmatter defines it) */
+.theme-report h1 {
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+  color: var(--report-bg-dark);
+  margin-top: 24pt;
+  margin-bottom: 12pt;
+  border-bottom: 2px solid var(--report-accent);
+  padding-bottom: 6pt;
+}
+
+
+.theme-report h2 {
+  font-size: var(--font-size-h2);
+  font-weight: 600;
+  color: var(--report-bg-dark);
+  margin-top: 18pt;
+  margin-bottom: 8pt;
+}
+
+.theme-report h3 {
+  font-size: var(--font-size-h3);
+  font-weight: 600;
+  color: var(--report-bg-dark);
+  margin-top: 14pt;
+  margin-bottom: 6pt;
+}
+
+/* Paragraph spacing */
+.theme-report p {
+  margin-bottom: 10pt;
+}
+
+/* Lists */
+.theme-report ul, 
+.theme-report ol {
+  margin-bottom: 10pt;
+  padding-left: 20pt;
+}
+
+.theme-report li {
+  margin-bottom: 4pt;
+}
+
+/* Callouts / Blockquotes (Reports often use panels) */
+.theme-report blockquote {
+  border-left: 4px solid var(--report-accent);
+  background-color: #f0f9ff;
+  color: #0369a1;
+  padding: 12pt 16pt;
+  margin: 16pt 0;
+  border-radius: 4px;
+}
+
+.theme-report blockquote p {
+  margin-bottom: 0;
+}
+
+/* Code */
+.theme-report code {
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #f1f5f9;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: var(--font-size-code);
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.theme-report pre {
+  background-color: #f8fafc;
+  padding: 12pt;
+  border-radius: 6px;
+  overflow: auto;
+  margin: 12pt 0;
+  border: 0.5pt solid #334155;
+}
+
+.theme-report pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: var(--font-size-code);
+  color: #0f172a;
+  border: none;
+}
+
+/* Table Design */
+.theme-report table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16pt 0;
+  font-size: var(--font-size-table);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.theme-report table th, 
+.theme-report table td {
+  border: 1px solid #e2e8f0;
+  padding: 8pt 10pt;
+}
+
+.theme-report table th {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-weight: 600;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.theme-report table tr:nth-child(even) {
+  background-color: #f8fafc;
+}

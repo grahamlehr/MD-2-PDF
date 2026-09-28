@@ -1,0 +1,142 @@
+/* --- Elegant Resume / CV Theme --- */
+
+.theme-resume {
+  --pdf-font-family: 'Fira Sans', 'Inter', sans-serif;
+  --pdf-color-primary: #1c1917;
+  --pdf-color-secondary: #57534e;
+  --resume-accent: #0f766e; /* Teal tone */
+
+  /* Font size variables */
+  --font-size-base: calc(9.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-h1: calc(24pt * var(--pdf-font-size-scale, 1));
+  --font-size-h2: calc(13pt * var(--pdf-font-size-scale, 1));
+  --font-size-h3: calc(11pt * var(--pdf-font-size-scale, 1));
+  --font-size-date: calc(8.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-contact: calc(9pt * var(--pdf-font-size-scale, 1));
+  --font-size-table: calc(8.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-blockquote: calc(9pt * var(--pdf-font-size-scale, 1));
+  --font-size-code: calc(8.5pt * var(--pdf-font-size-scale, 1));
+}
+
+.theme-resume .pagedjs_page_content {
+  font-family: var(--pdf-font-family);
+  color: var(--pdf-color-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+/* Centered Header / Contact Info */
+.theme-resume h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+  text-align: center;
+  color: var(--pdf-color-primary);
+  margin-top: 0;
+  margin-bottom: 4pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.theme-resume h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: var(--font-size-h2);
+  font-weight: 600;
+  color: var(--resume-accent);
+  border-bottom: 2px solid var(--resume-accent);
+  padding-bottom: 3pt;
+  margin-top: 14pt;
+  margin-bottom: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.theme-resume h3 {
+  font-size: var(--font-size-h3);
+  font-weight: 600;
+  color: var(--pdf-color-primary);
+  margin-top: 10pt;
+  margin-bottom: 3pt;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+/* Metadata alignments (e.g. bold subtitle with date on the right) */
+.theme-resume h3 span.date {
+  font-weight: 400;
+  font-size: var(--font-size-date);
+  color: var(--pdf-color-secondary);
+}
+
+.theme-resume p {
+  margin-bottom: 6pt;
+  text-align: justify;
+}
+
+/* Contact Details List (first paragraph of the document) */
+.theme-resume h1 + p {
+  text-align: center;
+  font-size: var(--font-size-contact);
+  color: var(--pdf-color-secondary);
+  margin-bottom: 12pt;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Bullet separations for contact details */
+.theme-resume h1 + p a {
+  color: var(--pdf-color-secondary);
+  text-decoration: none;
+}
+
+/* Lists */
+.theme-resume ul {
+  padding-left: 14pt;
+  margin-bottom: 6pt;
+}
+
+.theme-resume li {
+  margin-bottom: 2pt;
+}
+
+/* Compact tables */
+.theme-resume table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10pt 0;
+  font-size: var(--font-size-table);
+}
+
+.theme-resume table td, 
+.theme-resume table th {
+  padding: 4pt 6pt;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.theme-resume table th {
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 2px solid #a8a29e;
+}
+
+/* Custom Skill grid wrapper if users write lists */
+.theme-resume blockquote {
+  background-color: #f5f5f4;
+  border-left: 3px solid #78716c;
+  padding: 6pt 10pt;
+  margin: 8pt 0;
+  color: var(--pdf-color-secondary);
+  font-size: var(--font-size-blockquote);
+  border-radius: 4px;
+}
+
+.theme-resume code {
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #f5f5f4;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: var(--font-size-code);
+}

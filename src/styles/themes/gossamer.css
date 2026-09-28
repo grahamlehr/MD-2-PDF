@@ -1,0 +1,160 @@
+/* --- Gossamer Document Theme --- */
+
+.theme-gossamer {
+  --pdf-font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  --pdf-color-primary: #2d3139;
+  --pdf-color-secondary: #939599;
+  --gossamer-accent: #EC4D25;       /* Gossamer Red-Orange Primary */
+  --gossamer-secondary: #2BCFCE;    /* Gossamer Cyan Secondary */
+  --gossamer-bg-light: #FAFAFA;
+  --gossamer-neutral-light: #CDCDCF;
+  --gossamer-neutral-mid: #939599;
+
+  /* Font size variables */
+  --font-size-base: calc(10.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-h1: calc(22pt * var(--pdf-font-size-scale, 1));
+  --font-size-h2: calc(16pt * var(--pdf-font-size-scale, 1));
+  --font-size-h3: calc(13pt * var(--pdf-font-size-scale, 1));
+  --font-size-code: calc(9pt * var(--pdf-font-size-scale, 1));
+  --font-size-table: calc(9.5pt * var(--pdf-font-size-scale, 1));
+}
+
+.theme-gossamer .pagedjs_page_content {
+  font-family: var(--pdf-font-family);
+  color: var(--pdf-color-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+}
+
+/* Headings */
+.theme-gossamer h1,
+.theme-gossamer h2,
+.theme-gossamer h3,
+.theme-gossamer h4,
+.theme-gossamer h5,
+.theme-gossamer h6 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  color: #1a1c23;
+  margin-top: 20pt;
+  margin-bottom: 8pt;
+  line-height: 1.25;
+}
+
+.theme-gossamer h1 {
+  font-size: var(--font-size-h1);
+  color: var(--gossamer-accent);
+  border-bottom: 2.5px solid var(--gossamer-accent);
+  padding-bottom: 6pt;
+}
+
+.theme-gossamer h2 {
+  font-size: var(--font-size-h2);
+  color: #1a1c23;
+  border-bottom: 1.5px solid var(--gossamer-secondary);
+  padding-bottom: 4pt;
+}
+
+.theme-gossamer h3 {
+  font-size: var(--font-size-h3);
+  color: #2d3139;
+}
+
+/* Paragraphs & Spacing */
+.theme-gossamer p,
+.theme-gossamer ul,
+.theme-gossamer ol,
+.theme-gossamer table,
+.theme-gossamer blockquote {
+  margin-bottom: 12pt;
+}
+
+/* Lists */
+.theme-gossamer ul,
+.theme-gossamer ol {
+  padding-left: 20pt;
+}
+
+.theme-gossamer li {
+  margin-bottom: 4pt;
+}
+
+.theme-gossamer ul li::marker {
+  color: var(--gossamer-secondary);
+}
+
+/* Blockquotes / Callouts */
+.theme-gossamer blockquote {
+  border-left: 4px solid var(--gossamer-accent);
+  background-color: rgba(236, 77, 37, 0.05);
+  color: #2d3139;
+  padding: 10pt 16pt;
+  margin: 14pt 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.theme-gossamer blockquote p {
+  margin-bottom: 0;
+}
+
+/* Code & Code Blocks */
+.theme-gossamer code {
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #f1f3f5;
+  color: #ec4d25;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: var(--font-size-code);
+  border: 1px solid var(--gossamer-neutral-light);
+}
+
+.theme-gossamer pre {
+  background-color: #1a1c23;
+  padding: 12pt;
+  border-radius: 8px;
+  overflow: auto;
+  margin: 14pt 0;
+  border-left: 4px solid var(--gossamer-secondary);
+}
+
+.theme-gossamer pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  color: #FAFAFA;
+  font-size: var(--font-size-code);
+}
+
+/* Table Design */
+.theme-gossamer table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16pt 0;
+  font-size: var(--font-size-table);
+}
+
+.theme-gossamer table th,
+.theme-gossamer table td {
+  border: 1px solid var(--gossamer-neutral-light);
+  padding: 8pt 10pt;
+  text-align: left;
+}
+
+.theme-gossamer table th {
+  background-color: #1a1c23;
+  color: #FAFAFA;
+  font-weight: 600;
+  border-bottom: 2px solid var(--gossamer-secondary);
+}
+
+.theme-gossamer table tr:nth-child(even) {
+  background-color: #f7f8fa;
+}
+
+/* Horizontal Rule */
+.theme-gossamer hr {
+  height: 2px;
+  background: linear-gradient(90deg, var(--gossamer-accent), var(--gossamer-secondary));
+  border: none;
+  margin: 20pt 0;
+}

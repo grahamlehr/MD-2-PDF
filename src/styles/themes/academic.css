@@ -1,0 +1,171 @@
+/* --- Academic Paper Theme --- */
+
+.theme-academic {
+  --pdf-font-family: 'Playfair Display', 'Merriweather', 'Times New Roman', serif;
+  --pdf-color-primary: #111111;
+  --pdf-color-secondary: #444444;
+
+  /* Font size variables */
+  --font-size-base: calc(10pt * var(--pdf-font-size-scale, 1));
+  --font-size-doc-title: calc(20pt * var(--pdf-font-size-scale, 1));
+  --font-size-doc-author: calc(11pt * var(--pdf-font-size-scale, 1));
+  --font-size-h1: calc(15pt * var(--pdf-font-size-scale, 1));
+  --font-size-h2: calc(12.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-h3: calc(11pt * var(--pdf-font-size-scale, 1));
+  --font-size-abstract: calc(9.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-table: calc(9pt * var(--pdf-font-size-scale, 1));
+  --font-size-table-th: calc(8.5pt * var(--pdf-font-size-scale, 1));
+  --font-size-code: calc(8.5pt * var(--pdf-font-size-scale, 1));
+}
+
+.theme-academic .pagedjs_page_content {
+  font-family: var(--pdf-font-family);
+  color: var(--pdf-color-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+}
+
+/* Formal Centered Title elements */
+.theme-academic h1.doc-title {
+  text-align: center;
+  font-size: var(--font-size-doc-title);
+  font-weight: 700;
+  margin-top: 24pt;
+  margin-bottom: 8pt;
+}
+
+.theme-academic p.doc-author {
+  text-align: center;
+  font-size: var(--font-size-doc-author);
+  font-style: italic;
+  margin-bottom: 24pt;
+}
+
+/* Headings */
+.theme-academic h1, 
+.theme-academic h2, 
+.theme-academic h3, 
+.theme-academic h4 {
+  font-family: var(--pdf-font-family);
+  font-weight: 700;
+  color: #000000;
+  margin-top: 20pt;
+  margin-bottom: 8pt;
+  line-height: 1.3;
+}
+
+.theme-academic h1 {
+  font-size: var(--font-size-h1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.theme-academic h2 {
+  font-size: var(--font-size-h2);
+}
+
+.theme-academic h3 {
+  font-size: var(--font-size-h3);
+  font-style: italic;
+}
+
+/* Paragraph structures (Traditional academic indent) */
+.theme-academic p {
+  margin-bottom: 0;
+  text-indent: 24pt;
+  text-align: justify;
+}
+
+/* Override indent for the very first paragraph after a heading */
+.theme-academic h1 + p,
+.theme-academic h2 + p,
+.theme-academic h3 + p,
+.theme-academic blockquote + p,
+.theme-academic pre + p,
+.theme-academic table + p,
+.theme-academic .doc-author + p {
+  text-indent: 0;
+}
+
+/* Abstract block container styling (first blockquote) */
+.theme-academic blockquote {
+  margin: 18pt 36pt;
+  padding: 0;
+  background: none;
+  border-left: none;
+  font-size: var(--font-size-abstract);
+  text-align: justify;
+  line-height: 1.6;
+}
+
+.theme-academic blockquote::before {
+  content: "Abstract — ";
+  font-weight: 700;
+}
+
+/* Lists */
+.theme-academic ul, 
+.theme-academic ol {
+  margin-top: 6pt;
+  margin-bottom: 12pt;
+  padding-left: 24pt;
+}
+
+.theme-academic li {
+  margin-bottom: 4pt;
+}
+
+/* Table styling matching formal IEEE/APA standards (horizontal lines only) */
+.theme-academic table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18pt 0;
+  font-size: var(--font-size-table);
+  border-top: 1.5pt solid black;
+  border-bottom: 1.5pt solid black;
+}
+
+.theme-academic table th, 
+.theme-academic table td {
+  padding: 6pt 8pt;
+  border: none;
+  border-bottom: 0.5pt solid #dddddd;
+  text-align: left;
+}
+
+.theme-academic table th {
+  border-bottom: 1pt solid black;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: var(--font-size-table-th);
+}
+
+.theme-academic table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Code */
+.theme-academic code {
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #f7f7f7;
+  padding: 1px 4px;
+  font-size: var(--font-size-code);
+  border: 0.5pt solid #e0e0e0;
+}
+
+.theme-academic pre {
+  background-color: #fcfcfc;
+  padding: 10pt;
+  margin: 12pt 0;
+  border: 0.5pt solid #cccccc;
+}
+
+.theme-academic pre code {
+  background: none;
+  border: none;
+  font-size: var(--font-size-code);
+  color: #111111;
+}
