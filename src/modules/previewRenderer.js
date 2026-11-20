@@ -38,6 +38,7 @@ mermaid.initialize({
   startOnLoad: false,
   securityLevel: 'loose',
   theme: 'neutral',
+  layout: 'dagre', // Mermaid 12 defaults to ELK; keep the 11.x layout
   logLevel: 5
 });
 
@@ -765,7 +766,8 @@ export class PreviewRenderer {
     // Reset mermaid theme
     mermaid.initialize({
       startOnLoad: false,
-      theme: theme
+      theme: theme,
+      layout: 'dagre'
     });
 
     for (let i = 0; i < mermaidNodes.length; i++) {
